@@ -72,6 +72,11 @@
       vertical-align: middle;
     }
 
+    input[type="text"] {
+      width: 80px;
+      text-transform: uppercase;
+    }
+
     button {
       margin-top: 1rem;
       font-size: 1.25rem;
@@ -113,11 +118,13 @@
     <label>
       Gradient Color 1:
       <input type="color" id="color1" value="#3800ff" />
+      <input type="text" id="hex1" value="#3800FF" maxlength="7" />
     </label>
 
     <label>
       Gradient Color 2:
       <input type="color" id="color2" value="#ffaded" />
+      <input type="text" id="hex2" value="#FFADED" maxlength="7" />
     </label>
 
     <button onclick="updateUsername()">Update</button>
@@ -190,6 +197,34 @@
 
   usernameBig.addEventListener("mouseenter", () => startGradientAnimation(usernameBig, false));
   usernameBig.addEventListener("mouseleave", () => stopGradientAnimation(usernameBig, false));
+
+  const color1Input = document.getElementById("color1");
+  const hex1Input = document.getElementById("hex1");
+
+  color1Input.addEventListener("input", () => {
+    hex1Input.value = color1Input.value.toUpperCase();
+  });
+
+  hex1Input.addEventListener("input", () => {
+    const val = hex1Input.value;
+    if (/^#([0-9A-F]{6})$/i.test(val)) {
+      color1Input.value = val;
+    }
+  });
+
+  const color2Input = document.getElementById("color2");
+  const hex2Input = document.getElementById("hex2");
+
+  color2Input.addEventListener("input", () => {
+    hex2Input.value = color2Input.value.toUpperCase();
+  });
+
+  hex2Input.addEventListener("input", () => {
+    const val = hex2Input.value;
+    if (/^#([0-9A-F]{6})$/i.test(val)) {
+      color2Input.value = val;
+    }
+  });
 
   function updateUsername() {
     const name = document.getElementById("nameInput").value;
