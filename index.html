@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Discord-like username gradient</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      background-color: #323339;
+      font-family: "gg sans", "Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0;
+    }
+
+    .container {
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .username {
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-block;
+      background-image: repeating-linear-gradient(
+        90deg,
+        var(--color1),
+        var(--color2) 25%,
+        var(--color1) 50%
+      );
+      background-size: 300% 100%;
+      background-position: 0 0;
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 2px rgba(255, 255, 255, 0.2);
+      transition: filter 0.3s ease, text-shadow 0.3s ease;
+      white-space: nowrap;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+    }
+
+    .username.small {
+      font-size: 1.5rem;
+    }
+
+    .username.big {
+      font-size: 3rem;
+    }
+
+    .username.glowing {
+      text-shadow: 0 0 6px rgba(255, 255, 255, 0.3);
+      filter: brightness(1.15);
+    }
+
+    label {
+      display: block;
+      margin: 1rem 0 0.5rem;
+      font-size: 1.25rem;
+    }
+
+    input[type="text"], input[type="color"] {
+      font-size: 1.25rem;
+      padding: 0.25rem 0.5rem;
+      margin-left: 0.5rem;
+      vertical-align: middle;
+    }
+
+    button {
+      margin-top: 1rem;
+      font-size: 1.25rem;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+    }
+
+    .note {
+      font-size: 1rem;
+      color: #888;
+      margin-top: 1rem;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <span id="usernameSmall"
+          class="username small"
+          style="--color1: #3800ff; --color2: #ffaded;">
+      name
+    </span>
+
+    <br/>
+
+    <span id="usernameBig"
+          class="username big"
+          style="--color1: #3800ff; --color2: #ffaded;">
+      name
+    </span>
+
+    <div class="note">hover to make the size like discord, and to see the hover effect</div>
+
+    <label>
+      Username:
+      <input type="text" id="nameInput" placeholder="Enter new name" />
+    </label>
+
+    <label>
+      Gradient Color 1:
+      <input type="color" id="color1" value="#3800ff" />
+    </label>
+
+    <label>
+      Gradient Color 2:
+      <input type="color" id="color2" value="#ffaded" />
+    </label>
+
+    <button onclick="updateUsername()">Update</button>
+  </div>
+
+<script>
+  const usernameSmall = document.getElementById("usernameSmall");
+  const usernameBig = document.getElementById("usernameBig");
+
+  let animationFrameIdSmall = null;
+  let animationFrameIdBig = null;
+  let startTimeSmall = null;
+  let startTimeBig = null;
+  const animationDuration = 3000;
+
+  function startGradientAnimation(usernameElem, isSmall) {
+    if (isSmall) {
+      cancelAnimationFrame(animationFrameIdSmall);
+    } else {
+      cancelAnimationFrame(animationFrameIdBig);
+    }
+
+    const usernameWidth = usernameElem.offsetWidth;
+    const bgSizeX = usernameWidth * 8 / 5;
+    usernameElem.style.backgroundSize = `${bgSizeX}px 100%`;
+
+    if (isSmall) startTimeSmall = null;
+    else startTimeBig = null;
+
+    usernameElem.classList.add("glowing");
+
+    function animate(time) {
+      if (isSmall && !startTimeSmall) startTimeSmall = time;
+      else if (!isSmall && !startTimeBig) startTimeBig = time;
+
+      const elapsed = (time - (isSmall ? startTimeSmall : startTimeBig)) % animationDuration;
+      const posX = (elapsed / animationDuration) * bgSizeX;
+      usernameElem.style.backgroundPosition = `${posX}px 0`;
+
+      if (isSmall) {
+        animationFrameIdSmall = requestAnimationFrame(animate);
+      } else {
+        animationFrameIdBig = requestAnimationFrame(animate);
+      }
+    }
+
+    if (isSmall) {
+      animationFrameIdSmall = requestAnimationFrame(animate);
+    } else {
+      animationFrameIdBig = requestAnimationFrame(animate);
+    }
+  }
+
+  function stopGradientAnimation(usernameElem, isSmall) {
+    if (isSmall) {
+      cancelAnimationFrame(animationFrameIdSmall);
+      animationFrameIdSmall = null;
+      startTimeSmall = null;
+    } else {
+      cancelAnimationFrame(animationFrameIdBig);
+      animationFrameIdBig = null;
+      startTimeBig = null;
+    }
+    usernameElem.style.backgroundPosition = `0 0`;
+    usernameElem.classList.remove("glowing");
+  }
+
+  usernameSmall.addEventListener("mouseenter", () => startGradientAnimation(usernameSmall, true));
+  usernameSmall.addEventListener("mouseleave", () => stopGradientAnimation(usernameSmall, true));
+
+  usernameBig.addEventListener("mouseenter", () => startGradientAnimation(usernameBig, false));
+  usernameBig.addEventListener("mouseleave", () => stopGradientAnimation(usernameBig, false));
+
+  function updateUsername() {
+    const name = document.getElementById("nameInput").value;
+    const color1 = document.getElementById("color1").value;
+    const color2 = document.getElementById("color2").value;
+
+    if (name.trim()) {
+      usernameSmall.textContent = name;
+      usernameBig.textContent = name;
+    }
+
+    usernameSmall.style.setProperty("--color1", color1);
+    usernameSmall.style.setProperty("--color2", color2);
+
+    usernameBig.style.setProperty("--color1", color1);
+    usernameBig.style.setProperty("--color2", color2);
+
+    if (usernameSmall.matches(':hover')) {
+      startGradientAnimation(usernameSmall, true);
+    }
+    if (usernameBig.matches(':hover')) {
+      startGradientAnimation(usernameBig, false);
+    }
+  }
+</script>
+
+</body>
+</html>
